@@ -24,17 +24,17 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Crear una nueva cita médica
-app.post('/citas', upload.single('autorizacion'), (req, res) => {
-  const { cc, fecha } = req.body;
-  const autorizacion = req.file;
-  if (!cc || !fecha || !autorizacion) {
+app.post('/citas', upload.single('authorisation'), (req, res) => {
+  const { cc, date } = req.body;
+  const authorisation = req.file;
+  if (!cc || !date) {
     return res.status(400).send('Faltan datos requeridos');
   }
   const nuevaCita = {
     id: uuidv4(),
     cc,
-    fecha,
-    autorizacion: autorizacion.path,
+    date,
+    authorisation: authorisation != null ? authorisation.path : null,
     cancelada: false
   };
   citas.push(nuevaCita);
@@ -44,21 +44,22 @@ app.post('/citas', upload.single('autorizacion'), (req, res) => {
 // Consultar citas en un rango de fechas
 app.get('/citas', (req, res) => {
   const { fechaInicio, fechaFin } = req.query;
-
+  console.log(fechaInicio, fechaFin);
+  
   if (!fechaInicio || !fechaFin) {
     return res.status(400).send('Faltan los parámetros de fecha');
   }
   const citasEnRango = citas.filter(cita => 
-    new Date(cita.fecha) >= new Date(fechaInicio) && new Date(cita.fecha) <= new Date(fechaFin)
+    new Date(cita.date) >= new Date(fechaInicio) && new Date(cita.date) <= new Date(fechaFin)
   );
-
+  console.log(citasEnRango);
   res.json(citasEnRango);
 });
 
 // Cancelar una cita
 app.patch('/citas/:id/cancelar', (req, res) => {
   const { id } = req.params;
-
+  console.log(id);
   const cita = citas.find(c => c.id === id);
   if (!cita) {
     return res.status(404).send('Cita no encontrada');
